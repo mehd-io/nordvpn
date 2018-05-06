@@ -2,7 +2,7 @@
 
 # NordVpn
 
-This is an OpenVPN client docker container that use recommended NordVpn servers. It makes routing containers' traffic through OpenVPN easy.
+This is an OpenVPN client docker container that use least loaded NordVpn servers. It makes routing containers' traffic through OpenVPN easy.
 
 # What is OpenVPN?
 
@@ -29,7 +29,7 @@ Once it's up other containers can be started using it's network connection:
 
 ## Filter NordVpn servers
 
-This container selects least loaded server from NordVpn pool. Server list can be filtered by setting `COUNTRY`, `CATEGORY` and/or `PROTOCOL` environment variables.
+This container selects least loaded server from NordVpn pool. Server list can be filtered by setting `COUNTRY`, `CATEGORY` and/or `PROTOCOL` environment variables. If filtered list is empty. recommended server is selected.
 
 ## Local Network access to services connecting to the internet through the VPN.
 
