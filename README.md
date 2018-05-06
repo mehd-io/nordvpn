@@ -2,31 +2,19 @@
 
 # NordVpn
 
-This is an OpenVPN client docker container that use recommended Nordvpn servers. It makes routing containers'
-traffic through OpenVPN easy.
+This is an OpenVPN client docker container that use recommended NordVpn servers. It makes routing containers' traffic through OpenVPN easy.
 
 # What is OpenVPN?
 
-OpenVPN is an open-source software application that implements virtual private
-network (VPN) techniques for creating secure point-to-point or site-to-site
-connections in routed or bridged configurations and remote access facilities.
-It uses a custom security protocol that utilizes SSL/TLS for key exchange. It is
-capable of traversing network address translators (NATs) and firewalls.
+OpenVPN is an open-source software application that implements virtual private network (VPN) techniques for creating secure point-to-point or site-to-site connections in routed or bridged configurations and remote access facilities. It uses a custom security protocol that utilizes SSL/TLS for key exchange. It is capable of traversing network address translators (NATs) and firewalls.
 
 # How to use this image
 
-This container was designed to be started first to provide a connection
-to other containers (using `--net=container:vpn`, see below *Starting an NordVpn
-client instance*).
+This container was designed to be started first to provide a connection to other containers (using `--net=container:vpn`, see below *Starting an NordVpn client instance*).
 
-**NOTE**: More than the basic privileges are needed for NordVpn. With docker 1.2
-or newer you can use the `--cap-add=NET_ADMIN` and `--device /dev/net/tun`
-options. Earlier versions, or with fig, and you'll have to run it in privileged
-mode.
+**NOTE**: More than the basic privileges are needed for NordVpn. With docker 1.2 or newer you can use the `--cap-add=NET_ADMIN` and `--device /dev/net/tun` options. Earlier versions, or with fig, and you'll have to run it in privileged mode.
 
-**NOTE 2**: If you need a template for using this container with
-`docker-compose`, see the example
-[file](https://github.com/dperson/openvpn-client/raw/master/docker-compose.yml).
+**NOTE 2**: If you need a template for using this container with `docker-compose`, see the example [file](https://github.com/dperson/openvpn-client/raw/master/docker-compose.yml).
 
 ## Starting an NordVpn instance
 
@@ -41,8 +29,7 @@ Once it's up other containers can be started using it's network connection:
 
 ## Filter NordVpn servers
 
-This container selects least loaded server from NordVpn pool. Server list can be filtered
-by setting `COUNTRY`, `CATEGORY` and/or `PROTOCOL` environment variables.
+This container selects least loaded server from NordVpn pool. Server list can be filtered by setting `COUNTRY`, `CATEGORY` and/or `PROTOCOL` environment variables.
 
 ## Local Network access to services connecting to the internet through the VPN.
 
@@ -64,9 +51,7 @@ now the service provided by the second container would be available from the hos
                 --link vpn:<service_name> -d dperson/nginx \
                 -w "http://<service_name>:<PORT>/<URI>;/<PATH>"
 
-Which will start a Nginx web server on local ports 80 and 443, and proxy any
-requests under `/<PATH>` to the to `http://<service_name>:<PORT>/<URI>`. To use
-a concrete example:
+Which will start a Nginx web server on local ports 80 and 443, and proxy any requests under `/<PATH>` to the to `http://<service_name>:<PORT>/<URI>`. To use a concrete example:
 
     docker run -it --name bit --net=container:vpn -d bubundut/nordvpn
     docker run -it --name web -p 80:80 -p 443:443 --link vpn:bit \
@@ -102,5 +87,4 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
 
 ## Issues
 
-If you have any problems with or questions about this image, please contact me
-through a [GitHub issue](https://github.com/azinchen/nordvpn/issues).
+If you have any problems with or questions about this image, please contact me through a [GitHub issue](https://github.com/azinchen/nordvpn/issues).
