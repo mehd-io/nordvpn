@@ -57,14 +57,12 @@ else
 fi
 
 servers=`echo $filtered | jq -s -a 'unique[]'`
-filtered=""
+filtered="$servers"
 
-if [[ -z "${CATEGORY}" ]]; then
-    filtered="$servers"
-else
+if [[ "${CATEGORY}" ]]; then
     read -ra categories <<< "$CATEGORY"
     for category in "${categories[@]}"; do
-        filtered="$filtered"`echo $servers | jq -c 'select(.categories[].name == "'$category'")'`
+        filtered=`echo $filtered | jq -c 'select(.categories[].name == "'$category'")'`
     done
 fi
 

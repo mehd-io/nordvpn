@@ -29,7 +29,7 @@ Once it's up other containers can be started using it's network connection:
 
 ## Filter NordVpn servers
 
-This container selects least loaded server from NordVpn pool. Server list can be filtered by setting `COUNTRY`, `CATEGORY` and/or `PROTOCOL` environment variables. If filtered list is empty. recommended server is selected.
+This container selects least loaded server from NordVpn pool. Server list can be filtered by setting `COUNTRY`, `CATEGORY` and/or `PROTOCOL` environment variables. If filtered list is empty, recommended server is selected.
 
 ## Local Network access to services connecting to the internet through the VPN.
 
@@ -42,7 +42,7 @@ The environmenta variable NETWORK must be your local network that you would conn
 Now just create the second container _without_ the `-p` parameter, only inlcude the `--net=container:vpn`, the port should be declare in the vpn container.
 
     docker run -ti --rm --net=container:vpn -d bubuntux/riot-web
-    
+
 now the service provided by the second container would be available from the host machine (http://localhost:8080) or anywhere inside the local network (http://192.168.1.xxx:8080).
 
 ## Local Network access to services connecting to the internet through the VPN using a Web proxy.
