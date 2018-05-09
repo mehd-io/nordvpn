@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# Use api.nordvpn.com
-servers=`curl -s https://api.nordvpn.com/server | jq -c '.[]'`
-
-# Get NordVpn server recomendations
-recomendations=`curl -s https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations |\
-                jq -r '.[] | .hostname' | shuf`
-
 # Firewall everything has to go through the vpn
 iptables  -F OUTPUT
 ip6tables -F OUTPUT 2> /dev/null
@@ -28,6 +21,8 @@ iptables  -A OUTPUT -o eth0 -p tcp --dport 1194 -j ACCEPT
 ip6tables -A OUTPUT -o eth0 -p tcp --dport 1194 -j ACCEPT 2> /dev/null
 iptables  -A OUTPUT -o eth0 -d nordvpn.com -j ACCEPT
 ip6tables -A OUTPUT -o eth0 -d nordvpn.com -j ACCEPT 2> /dev/null
+iptables  -A OUTPUT -o eth0 -d api.nordvpn.com -j ACCEPT
+ip6tables -A OUTPUT -o eth0 -d api.nordvpn.com -j ACCEPT 2> /dev/null
 
 if [ ! -z $NETWORK ]; then
     gw=`ip route | awk '/default/ {print $3}'`
@@ -45,38 +40,77 @@ base_dir="/vpn"
 ovpn_dir="$base_dir/ovpn"
 auth_file="$base_dir/auth"
 
+# Use api.nordvpn.com
+servers=`curl -s https://api.nordvpn.com/server`
+servers=`echo $servers | jq -c '.[] | select(.features.openvpn_udp == true)' &&\
+         echo $servers | jq -c '.[] | select(.features.openvpn_tcp == true)'`
+servers=`echo $servers | jq -s -a -c 'unique'`
+pool_length=`echo $servers | jq 'length'`
+echo "OpenVPN servers in pool: $pool_length"
+servers=`echo $servers | jq -c '.[]'`
+
 IFS=';'
 
-if [[ -z "${COUNTRY}" ]]; then
-    filtered="$servers"
-else
-    read -ra countries <<< "$COUNTRY"
-    for country in "${countries[@]}"; do
-        filtered="$filtered"`echo $servers | jq -c 'select(.country == "'$country'")'`
-    done
+if [[ !($pool_length -eq 0) ]]; then
+    if [[ -z "${COUNTRY}" ]]; then
+        echo "Country not set, skip filtering"
+    else
+        echo "Filter pool by country: $COUNTRY"
+        read -ra countries <<< "$COUNTRY"
+        for country in "${countries[@]}"; do
+            filtered="$filtered"`echo $servers | jq -c 'select(.country == "'$country'")'`
+        done
+        filtered=`echo $filtered | jq -s -a -c 'unique'`
+        pool_length=`echo $filtered | jq 'length'`
+        echo "Servers in filtered pool: $pool_length"
+        servers=`echo $filtered | jq -c '.[]'`
+    fi
 fi
 
-servers=`echo $filtered | jq -s -a 'unique[]'`
-filtered="$servers"
-
-if [[ "${CATEGORY}" ]]; then
-    read -ra categories <<< "$CATEGORY"
-    for category in "${categories[@]}"; do
-        filtered=`echo $filtered | jq -c 'select(.categories[].name == "'$category'")'`
-    done
+if [[ !($pool_length -eq 0) ]]; then
+    if [[ -z "${CATEGORY}" ]]; then
+        echo "Category not set, skip filtering"
+    else
+        echo "Filter pool by category: $CATEGORY"
+        read -ra categories <<< "$CATEGORY"
+        filtered="$servers"
+        for category in "${categories[@]}"; do
+            filtered=`echo $filtered | jq -c 'select(.categories[].name == "'$category'")'`
+        done
+        filtered=`echo $filtered | jq -s -a -c 'unique'`
+        pool_length=`echo $filtered | jq 'length'`
+        echo "Servers in filtered pool: $pool_length"
+        servers=`echo $filtered | jq -c '.[]'`
+    fi
 fi
 
-servers=`echo $filtered | jq -s -a 'unique[]'`
-filtered=""
-
-if [[ -z "${PROTOCOL}" ]]; then
-    filtered=`echo $servers | jq -c 'select(.features.openvpn_udp == true)'\
-        echo $servers | jq -c 'select(.features.openvpn_tcp == true)'`
-else
-    filtered=`echo $servers | jq -c 'select(.features.'$PROTOCOL' == true)'`
+if [[ !($pool_length -eq 0) ]]; then
+    if [[ -z "${PROTOCOL}" ]]; then
+        echo "Protocol not set, skip filtering"
+    else
+        echo "Filter pool by protocol: $PROTOCOL"
+        filtered=`echo $servers | jq -c 'select(.features.'$PROTOCOL' == true)' | jq -s -a -c 'unique'`
+        pool_length=`echo $filtered | jq 'length'`
+        echo "Servers in filtered pool: $pool_length"
+        servers=`echo $filtered | jq -c '.[]'`
+    fi
 fi
 
-servers=`echo $filtered | jq -s -c 'unique[]' | jq -s -c 'sort_by(.load)[]' | jq -r '.domain'`
+if [[ !($pool_length -eq 0) ]]; then
+    echo "Filter pool by load, less than 70%"
+    servers=`echo $servers | jq -c 'select(.load <= 70)'`
+    pool_length=`echo $servers | jq -s -a -c 'unique' | jq 'length'`
+    echo "Servers in filtered pool: $pool_length"
+    servers=`echo $servers | jq -s -c 'sort_by(.load)[]'`
+fi
+
+if [[ !($pool_length -eq 0) ]]; then
+    echo "--- Top 20 servers in filtered pool ---"
+    echo `echo $servers | jq -r '"\(.domain) \(.load)%"' | head -n 20`
+    echo "---------------------------------------"
+fi
+
+servers=`echo $servers | jq -r '.domain'`
 IFS=$'\n'
 read -ra filtered <<< "$servers"
 
@@ -86,6 +120,8 @@ for server in "${filtered[@]}"; do
         if [ -r "$config_file" ]; then
             config="$config_file"
             break
+        else
+            echo "UDP config for server $server not found"
         fi
     fi
     if [[ -z "${PROTOCOL}" ]] || [[ "${PROTOCOL}" == "openvpn_tcp" ]]; then
@@ -93,30 +129,40 @@ for server in "${filtered[@]}"; do
         if [ -r "$config_file" ]; then
             config="$config_file"
             break
+        else
+            echo "TCP config for server $server not found"
         fi
     fi
 done
 
 if [ -z $config ]; then
-    for server in ${recomendations}; do # Prefer UDP
+    echo "Filtered pool is empty or configs not found. Select server from recommended list"
+    recommendations=`curl -s https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations |\
+                    jq -r '.[] | .hostname' | shuf`
+    for server in ${recommendations}; do # Prefer UDP
         config_file="${ovpn_dir}/${server}.udp.ovpn"
         if [ -r "$config_file" ]; then
             config="$config_file"
             break
+        else
+            echo "UDP config for server $server not found"
         fi
     done
     if [ -z $config ]; then # Use TCP if UDP not available
-       for server in ${recomendations}; do
+       for server in ${recommendations}; do
             config_file="${ovpn_dir}/${server}.tcp.ovpn"
             if [ -r "$config_file" ]; then
                 config="$config_file"
                 break
+            else
+                echo "TCP config for server $server not found"
             fi
         done
     fi
 fi
 
 if [ -z $config ]; then
+    echo "List of recommended servers is empty or configs not found. Select random server from available configs."
     config="${ovpn_dir}/`ls ${ovpn_dir} | shuf -n 1`"
 fi
 
