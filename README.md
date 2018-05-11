@@ -1,8 +1,8 @@
 [![logo](https://github.com/azinchen/nordvpn/raw/master/NordVpn_logo.png)](https://ref.nordvpn.com/?id=171828599)
 
-# NordVpn
+# NordVPN
 
-This is an OpenVPN client docker container that use least loaded NordVpn servers. It makes routing containers' traffic through OpenVPN easy.
+This is an OpenVPN client docker container that use least loaded NordVPN servers. It makes routing containers' traffic through OpenVPN easy.
 
 # What is OpenVPN?
 
@@ -10,13 +10,13 @@ OpenVPN is an open-source software application that implements virtual private n
 
 # How to use this image
 
-This container was designed to be started first to provide a connection to other containers (using `--net=container:vpn`, see below *Starting an NordVpn client instance*).
+This container was designed to be started first to provide a connection to other containers (using `--net=container:vpn`, see below *Starting an NordVPN client instance*).
 
-**NOTE**: More than the basic privileges are needed for NordVpn. With docker 1.2 or newer you can use the `--cap-add=NET_ADMIN` and `--device /dev/net/tun` options. Earlier versions, or with fig, and you'll have to run it in privileged mode.
+**NOTE**: More than the basic privileges are needed for NordVPN. With docker 1.2 or newer you can use the `--cap-add=NET_ADMIN` and `--device /dev/net/tun` options. Earlier versions, or with fig, and you'll have to run it in privileged mode.
 
 **NOTE 2**: If you need a template for using this container with `docker-compose`, see the example [file](https://github.com/dperson/openvpn-client/raw/master/docker-compose.yml).
 
-## Starting an NordVpn instance
+## Starting an NordVPN instance
 
     docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn\
                 -e USER=user@email.com -e PASS=password
@@ -27,9 +27,9 @@ Once it's up other containers can be started using it's network connection:
 
     docker run -it --net=container:vpn -d some/docker-container
 
-## Filter NordVpn servers
+## Filter NordVPN servers
 
-This container selects least loaded server from NordVpn pool. Server list can be filtered by setting `COUNTRY`, `CATEGORY` and/or `PROTOCOL` environment variables. If filtered list is empty, recommended server is selected.
+This container selects least loaded server from NordVPN pool. Server list can be filtered by setting `COUNTRY`, `CATEGORY` and/or `PROTOCOL` environment variables. If filtered list is empty, recommended server is selected.
 
 ## Local Network access to services connecting to the internet through the VPN.
 
@@ -80,8 +80,8 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
  * `PROTOCOL` - Specify OpenVPN protocol. Only one protocol can be selected. Allowed protocols are:
    * `openvpn_udp`
    * `openvpn_tcp`
- * `USER`     - User for NordVpn account.
- * `PASS`     - Password for NordVpn account.
+ * `USER`     - User for NordVPN account.
+ * `PASS`     - Password for NordVPN account.
  * `NETWORK`  - CIDR network (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
  * `NETWORK6` - CIDR IPv6 network (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
 
