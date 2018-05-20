@@ -1,4 +1,4 @@
-[![logo](https://github.com/azinchen/nordvpn/raw/master/NordVpn_logo.png)](https://ref.nordvpn.com/?id=171828599)
+[![logo](https://github.com/azinchen/nordvpn/raw/master/NordVpn_logo.png)](https://www.nordvpn.com/)
 
 # NordVPN
 
@@ -87,4 +87,4 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
 
 ## Issues
 
-If you have any problems with or questions about this image, please contact me through a [GitHub issue](https://github.com/azinchen/nordvpn/issues).
+If you have any problems with or questions about this image, please contact me through a [GitHub issue](https://github.com/azinchen/nordvpn/issues) or [email](mailto:alexander@zinchenko.com).
