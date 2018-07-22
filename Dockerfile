@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-MAINTAINER Alexander Zinchenko <alexander@zinchenko.com>
+LABEL maintainer="Alexander Zinchenko <alexander@zinchenko.com>"
 
 COPY nordVpn.sh /usr/bin
 
@@ -12,12 +12,13 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     URL_OVPN_FILES="https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip" \
     MAX_LOAD=70
 
-VOLUME ["/vpn/ovpn/"]
+VOLUME ["/ovpn/"]
 
     # Install dependencies 
 RUN apk --no-cache --no-progress update && \
     apk --no-cache --no-progress upgrade && \
     apk --no-cache --no-progress add bash curl unzip iptables ip6tables jq openvpn tini && \
-    mkdir -p /vpn/ovpn/
+    mkdir -p /vpn/ \
+    mkdir -p /ovpn/
 
 ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/nordVpn.sh"]

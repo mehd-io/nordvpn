@@ -20,9 +20,8 @@ ip6tables -A OUTPUT -o eth0 -p udp --dport 1194 -j ACCEPT 2> /dev/null
 iptables  -A OUTPUT -o eth0 -p tcp --dport 1194 -j ACCEPT 
 ip6tables -A OUTPUT -o eth0 -p tcp --dport 1194 -j ACCEPT 2> /dev/null
 
-iptables_domain=`echo $URL_NORDVPN_API | awk -F/ '{print $3}'`
-iptables  -A OUTPUT -o eth0 -d $iptables_domain -j ACCEPT
-ip6tables -A OUTPUT -o eth0 -d $iptables_domain -j ACCEPT 2> /dev/null
+iptables  -A OUTPUT -o eth0 -d `echo $URL_NORDVPN_API | awk -F/ '{print $3}'` -j ACCEPT
+ip6tables -A OUTPUT -o eth0 -d `echo $URL_NORDVPN_API | awk -F/ '{print $3}'` -j ACCEPT 2> /dev/null
 
 if [ ! -z $NETWORK ]; then
     gw=`ip route | awk '/default/ {print $3}'`
@@ -37,15 +36,14 @@ if [ ! -z $NETWORK6 ]; then
 fi
 
 base_dir="/vpn"
-ovpn_dir="$base_dir/ovpn"
+ovpn_dir="/ovpn"
 auth_file="$base_dir/auth"
 
 if [ `ls -A $ovpn_dir | wc -l` -eq 0 ]
 then
     echo "Server configs not found. Download configs from NordVPN"
-    iptables_domain=`echo $URL_OVPN_FILES | awk -F/ '{print $3}'`
-    iptables  -A OUTPUT -o eth0 -d $iptables_domain -j ACCEPT
-    ip6tables -A OUTPUT -o eth0 -d $iptables_domain -j ACCEPT 2> /dev/null
+    iptables  -A OUTPUT -o eth0 -d `echo $URL_OVPN_FILES | awk -F/ '{print $3}'` -j ACCEPT
+    ip6tables -A OUTPUT -o eth0 -d `echo $URL_OVPN_FILES | awk -F/ '{print $3}'` -j ACCEPT 2> /dev/null
     curl -s $URL_OVPN_FILES -o /tmp/ovpn.zip
     unzip -q /tmp/ovpn.zip -d /tmp/ovpn
     mv /tmp/ovpn/*/*.ovpn $ovpn_dir
@@ -149,9 +147,8 @@ done
 
 if [ -z $config ]; then
     echo "Filtered pool is empty or configs not found. Select server from recommended list"
-    iptables_domain=`echo $URL_RECOMMENDED_SERVERS | awk -F/ '{print $3}'`
-    iptables  -A OUTPUT -o eth0 -d $iptables_domain -j ACCEPT
-    ip6tables -A OUTPUT -o eth0 -d $iptables_domain -j ACCEPT 2> /dev/null
+    iptables  -A OUTPUT -o eth0 -d `echo $URL_RECOMMENDED_SERVERS | awk -F/ '{print $3}'` -j ACCEPT
+    ip6tables -A OUTPUT -o eth0 -d `echo $URL_RECOMMENDED_SERVERS | awk -F/ '{print $3}'` -j ACCEPT 2> /dev/null
     recommendations=`curl -s $URL_RECOMMENDED_SERVERS | jq -r '.[] | .hostname' | shuf`
     for server in ${recommendations}; do # Prefer UDP
         config_file="${ovpn_dir}/${server}.udp.ovpn"
@@ -185,6 +182,5 @@ echo "$USER" > $auth_file
 echo "$PASS" >> $auth_file
 chmod 0600 $auth_file
 
-openvpn --cd $base_dir --config $config \
-    --auth-user-pass $auth_file --auth-nocache \
+openvpn --cd $base_dir --config $config --auth-user-pass $auth_file --auth-nocache \
     --script-security 2 --up /etc/openvpn/up.sh --down /etc/openvpn/down.sh
