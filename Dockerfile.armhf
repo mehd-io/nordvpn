@@ -7,7 +7,7 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
 
 VOLUME ["/ovpn/"]
 
-    # Install dependencies 
+RUN ["cross-build-start"]
 RUN \
     echo "**** install packages ****" && \
     apk --no-cache --no-progress update && \
@@ -16,5 +16,6 @@ RUN \
     echo "**** create folders ****" && \
     mkdir -p /vpn/ \
     mkdir -p /ovpn/
+RUN ["cross-build-end"]
 
 COPY root/ /

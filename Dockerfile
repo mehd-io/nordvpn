@@ -9,7 +9,6 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
 
 VOLUME ["/ovpn/"]
 
-    # Install dependencies 
 RUN \
     echo "**** install packages ****" && \
     apk --no-cache --no-progress update && \
