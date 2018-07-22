@@ -1,11 +1,6 @@
-FROM alpine:latest
+FROM lsiobase/alpine:latest
 
 LABEL maintainer="Alexander Zinchenko <alexander@zinchenko.com>"
-
-COPY nordVpn.sh /usr/bin
-
-HEALTHCHECK --start-period=15s --timeout=15s --interval=60s \
-            CMD curl -fL 'https://api.ipify.org' || exit 1
 
 ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     URL_RECOMMENDED_SERVERS="https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations" \
@@ -15,10 +10,13 @@ ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
 VOLUME ["/ovpn/"]
 
     # Install dependencies 
-RUN apk --no-cache --no-progress update && \
+RUN \
+    echo "**** install packages ****" && \
+    apk --no-cache --no-progress update && \
     apk --no-cache --no-progress upgrade && \
-    apk --no-cache --no-progress add bash curl unzip iptables ip6tables jq openvpn tini && \
+    apk --no-cache --no-progress add bash curl unzip iptables ip6tables jq openvpn && \
+    echo "**** create folders ****" && \
     mkdir -p /vpn/ \
     mkdir -p /ovpn/
 
-ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/nordVpn.sh"]
+COPY root/ /
