@@ -5,17 +5,6 @@ ovpn_dir="/ovpn"
 auth_file="$base_dir/auth"
 config_file="$base_dir/config.ovpn"
 
-echo "Create NordVPN config file"
-
-if [ `ls -A $ovpn_dir | wc -l` -eq 0 ]
-then
-    echo "Server configs not found. Download configs from NordVPN"
-    curl -s $URL_OVPN_FILES -o /tmp/ovpn.zip
-    unzip -q /tmp/ovpn.zip -d /tmp/ovpn
-    mv /tmp/ovpn/*/*.ovpn $ovpn_dir
-    rm -rf /tmp/*
-fi
-
 # Use api.nordvpn.com
 servers=`curl -s $URL_NORDVPN_API`
 servers=`echo $servers | jq -c '.[] | select(.features.openvpn_udp == true)' &&\
@@ -143,8 +132,8 @@ echo "$PASS" >> $auth_file
 chmod 0600 $auth_file
 
 cp "$config" "$config_file"
-echo "script-security 2" >>"$config_file"
-echo "up /etc/openvpn/up.sh" >>"$config_file"
-echo "down /etc/openvpn/down.sh" >>"$config_file"
+echo "script-security 2" >> "$config_file"
+echo "up /etc/openvpn/up.sh" >> "$config_file"
+echo "down /etc/openvpn/down.sh" >> "$config_file"
 
 exit 0
