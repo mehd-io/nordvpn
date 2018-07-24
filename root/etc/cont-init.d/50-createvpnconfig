@@ -69,6 +69,16 @@ if [[ !($pool_length -eq 0) ]]; then
     servers=`echo $servers | jq -s -c 'sort_by(.load)[]'`
 fi
 
+if [[ !($RANDOM_TOP -eq 0) ]]; then
+    echo "Random order of top $RANDOM_TOP servers in filtered pool"
+    if [[ $RANDOM_TOP -lt pool_length ]]; then
+        filtered=`echo $servers | head -n $RANDOM_TOP | shuf`
+        servers="$filtered"`echo $servers | tail -n +$((RANDOM_TOP + 1))`
+    else
+        servers=`echo $servers | shuf`
+    fi
+fi
+
 if [[ !($pool_length -eq 0) ]]; then
     echo "--- Top 20 servers in filtered pool ---"
     echo `echo $servers | jq -r '"\(.domain) \(.load)%"' | head -n 20`

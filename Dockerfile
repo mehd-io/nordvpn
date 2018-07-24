@@ -5,9 +5,8 @@ LABEL maintainer="Alexander Zinchenko <alexander@zinchenko.com>"
 ENV URL_NORDVPN_API="https://api.nordvpn.com/server" \
     URL_RECOMMENDED_SERVERS="https://nordvpn.com/wp-admin/admin-ajax.php?action=servers_recommendations" \
     URL_OVPN_FILES="https://downloads.nordcdn.com/configs/archives/servers/ovpn.zip" \
-    MAX_LOAD=70
-
-VOLUME ["/ovpn/"]
+    MAX_LOAD=70 \
+    RANDOM_TOP=0
 
 RUN \
     echo "**** install packages ****" && \
@@ -24,5 +23,7 @@ RUN \
     rm -rf /tmp/*
 
 COPY root/ /
+
+VOLUME ["/ovpn/"]
 
 ENTRYPOINT ["/init"]
