@@ -18,8 +18,9 @@ This container was designed to be started first to provide a connection to other
 
 ## Starting an NordVPN instance
 
-    docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn\
-                -e USER=user@email.com -e PASS=password
+    docker run -ti --cap-add=NET_ADMIN --device /dev/net/tun --name vpn \
+                -e USER=user@email.com -e PASS=password \
+                -e RANDOM_TOP=n -e RECREATE_VPN_CRON=string \
                 -e COUNRTY=country1;country2 -e CATEGORY=category1;category2 \
                 -e PROTOCOL=protocol -d azinchen/nordvpn
 
@@ -66,10 +67,10 @@ For multiple services (non-existant 'foo' used as an example):
                 -w "http://bit:9091/transmission;/transmission" \
                 -w "http://foo:8000/foo;/foo"
 
-ENVIRONMENT VARIABLES (only available with `docker run`)
+ENVIRONMENT VARIABLES
 
- * `COUNTRY`  - Use servers from countries in the list (IE Australia;New Zeland). Several countries can be selected using semicolon.
- * `CATEGORY` - Use servers from specific categories (IE P2P;Anti DDoS). Several categories can be selected using semicolon. Allowed categories are:
+ * `COUNTRY`           - Use servers from countries in the list (IE Australia;New Zeland). Several countries can be selected using semicolon.
+ * `CATEGORY`          - Use servers from specific categories (IE P2P;Anti DDoS). Several categories can be selected using semicolon. Allowed categories are:
    * `Anti DDoS`
    * `Dedicated IP servers`
    * `Double VPN`
@@ -77,13 +78,15 @@ ENVIRONMENT VARIABLES (only available with `docker run`)
    * `Onion Over VPN`
    * `P2P`
    * `Standard VPN servers`
- * `PROTOCOL` - Specify OpenVPN protocol. Only one protocol can be selected. Allowed protocols are:
+ * `PROTOCOL`          - Specify OpenVPN protocol. Only one protocol can be selected. Allowed protocols are:
    * `openvpn_udp`
    * `openvpn_tcp`
- * `USER`     - User for NordVPN account.
- * `PASS`     - Password for NordVPN account.
- * `NETWORK`  - CIDR network (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
- * `NETWORK6` - CIDR IPv6 network (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
+ * `RANDOM_TOP`        - Place n servers from filtered list in random order. Useful with `RECREATE_VPN_CRON`.
+ * `RECREATE_VPN_CRON` - Set period of selecting new server in format for crontab file.
+ * `USER`              - User for NordVPN account.
+ * `PASS`              - Password for NordVPN account.
+ * `NETWORK`           - CIDR network (IE 192.168.1.0/24), add a route to allows replies once the VPN is up.
+ * `NETWORK6`          - CIDR IPv6 network (IE fe00:d34d:b33f::/64), add a route to allows replies once the VPN is up.
 
 ## Issues
 

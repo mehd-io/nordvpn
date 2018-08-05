@@ -1,5 +1,7 @@
 #!/usr/bin/with-contenv bash
 
+echo "Select NordVPN server and create config file"
+
 base_dir="/vpn"
 ovpn_dir="/ovpn"
 auth_file="$base_dir/auth"
