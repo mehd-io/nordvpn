@@ -7,7 +7,7 @@ rm -f "$cron_file"
 touch "$cron_file"
 
 if [[ "${RECREATE_VPN_CRON}" ]]; then
-    echo "Create con file"
+    echo "Create cron file"
     echo "$RECREATE_VPN_CRON sh -c '/etc/cont-init.d/50-createvpnconfig && s6-svc -h /var/run/s6/services/nordvpnd'" >> "$cron_file"
 fi
 
