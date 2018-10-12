@@ -1,7 +1,7 @@
 #!/usr/bin/with-contenv bash
 
 echo "Firewall everything has to go through the vpn"
-
+'
 iptables  -F OUTPUT
 ip6tables -F OUTPUT 2> /dev/null
 iptables  -P OUTPUT DROP
@@ -20,7 +20,7 @@ iptables  -A OUTPUT -o eth0 -p udp --dport 1194 -j ACCEPT
 ip6tables -A OUTPUT -o eth0 -p udp --dport 1194 -j ACCEPT 2> /dev/null
 iptables  -A OUTPUT -o eth0 -p tcp --dport 1194 -j ACCEPT
 ip6tables -A OUTPUT -o eth0 -p tcp --dport 1194 -j ACCEPT 2> /dev/null
-
+'
 
 echo "Bypass requests to NordVPN thru regular connection"
 iptables  -A OUTPUT -o eth0 -d `echo $URL_NORDVPN_API | awk -F/ '{print $3}'` -j ACCEPT
